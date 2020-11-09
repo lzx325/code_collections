@@ -23,8 +23,12 @@ class Blob{
     private:
     std::shared_ptr<std::vector<T>> data;
     void check(size_type i, const T& msg) const;
-    friend std::ostream& operator<<  <> // This <> here makes operator<< to behave as a template function
+    friend std::ostream& operator<< <T> // This <T> here let only a specific instantiation of operator<< to be friend of the class
     (std::ostream&,const Blob<T>&);
+
+    // friend std::ostream& operator<< <> // Also fine
+    // (std::ostream&,const Blob<T>&);
+    
     friend class Pal1<T>; // befriend with a specific instantiation of Pal1
     template<typename X>
     friend class Pal2; // befriend with all instantiation of Pal2, note that it is not Pal2<X>
