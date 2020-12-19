@@ -1,0 +1,75 @@
+---
+title: "annotate"
+output: html_document
+---
+1. Use fgsea for GSEA
+2. Use annotate package to convert probe names to Symbols
+```{r}
+library(fgsea)
+library(data.table)
+library(ggplot2)
+library(hgu133a.db)
+library(annotate)
+```
+```{r}
+data_dir="."
+pathways_fn="c1.symbols.gmt"
+expression_fn="Gender_hgu133a.gct"
+cls_fn="Gender.cls"
+treat_label="m"
+control_label="f"
+pathways_fp=file.path(data_dir,pathways_fn)
+expression_fp=file.path(data_dir,expression_fn)
+cls_fp=file.path(data_dir,cls_fn)
+```
+
+```{r}
+pathways <- gmtPathways(pathways_fp)
+cls=CePa::read.cls(cls_fp,treat=treat_label,control=control_label)
+expression=CePa::read.gct(expression_fp)
+```
+```{r}
+sig2noise=function(treat_table,control_table){
+  stopifnot(dim(treat_table)[1]==dim(control_table)[1])
+  treat_mean=apply(treat_table,1,mean)
+  control_mean=apply(control_table,1,mean)
+  treat_sd=apply(treat_table,1,sd)
+  control_sd=apply(control_table,1,sd)
+  s2n=(treat_mean-control_mean)/(treat_sd+control_sd)
+  s2n=s2n[order(s2n)]
+  return(s2n)
+}
+dedup=function(symb,s2n){
+  occur=table(symb)
+  s2n_dedup=c()
+  for(n in names(occur)){
+    if(occur[n]<=1){
+      s2n_dedup[n]=s2n[n]
+    }else{
+      s2n_dedup[n]=mean(s2n[names(s2n)==n])
+      
+    }
+  }
+  s2n_dedup=s2n_dedup[order(s2n_dedup)]
+  return(s2n_dedup)
+}
+treat_table=expression[,cls$label==treat_label]
+control_table=expression[,cls$label==control_label]
+s2n=sig2noise(treat_table,control_table)
+symb=getSYMBOL(names(s2n),"hgu133a")
+s2n=s2n[!is.na(symb)]
+symb=symb[!is.na(symb)]
+names(s2n)=symb
+s2n_dedup=dedup(symb,s2n)
+```
+```{r}
+fgseaRes <- fgsea(pathways, s2n_dedup, minSize=5, maxSize=500)
+```
+```{r}
+length(s2n_dedup)
+```
+
+```{r}
+fgseaRes[order(pval),]
+```
+
