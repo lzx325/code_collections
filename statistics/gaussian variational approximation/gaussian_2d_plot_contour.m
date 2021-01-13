@@ -9,6 +9,6 @@ for i=1:length(x1)
         K_value(j,i)=(x-mu)'*Lambda*(x-mu);
     end
 end
-contour(x1,x2,K_value,[1,4,9],color);
+contour(x1,x2,K_value,[1,4,9],color); % note the chi-square distribution of (x-mu)'*Lambda*(x-mu), with df=2
 pbaspect([1 1 1]);
 end
