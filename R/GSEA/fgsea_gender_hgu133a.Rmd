@@ -72,4 +72,7 @@ length(s2n_dedup)
 ```{r}
 fgseaRes[order(pval),]
 ```
-
+```{r}
+plotEnrichment(pathways[["chrY"]],
+               s2n_dedup) + labs(title="Enrichment")
+```
